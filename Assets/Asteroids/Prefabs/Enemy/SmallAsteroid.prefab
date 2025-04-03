@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 2156973132448925657}
   - component: {fileID: 2357093287398988884}
   - component: {fileID: 2596586620126602833}
-  - component: {fileID: 78047066568722030}
   m_Layer: 0
   m_Name: SmallAsteroid
   m_TagString: Asteroid
@@ -134,19 +133,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &78047066568722030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8098998627088512756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de0560e5b88f2214989560950de0d0b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 5
-  smallAsteroidPrefab: {fileID: 0}
-  splitAmount: 4
-  isBigAsteroid: 0

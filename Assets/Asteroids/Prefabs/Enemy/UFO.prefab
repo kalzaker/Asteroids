@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7523359209070320143}
   - component: {fileID: 4330802962785330087}
   - component: {fileID: 8646724088520467949}
-  - component: {fileID: 7761812687940170510}
+  - component: {fileID: -8585991240633149041}
   m_Layer: 0
   m_Name: UFO
   m_TagString: Enemy
@@ -134,7 +134,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &7761812687940170510
+--- !u!114 &-8585991240633149041
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -143,8 +143,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2053239272701804376}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd47acb7ce36af94fac2bf8dd2e2fe9d, type: 3}
+  m_Script: {fileID: 11500000, guid: 439e4fed3f3155e46a8c257b7578ac87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
-  hp: 2
