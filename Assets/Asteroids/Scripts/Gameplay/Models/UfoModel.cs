@@ -8,12 +8,15 @@ public class UfoModel : IEnemy
     public EnemyType Type => EnemyType.Ufo;
 
     private readonly ShipModel _target;
-    private float _speed = 4f;
+    private readonly float _speed;
+    private readonly WorldConfig _worldConfig;
 
     public UfoModel(Vector3 spawnPosition, ShipModel target)
     {
         Position = spawnPosition;
         _target = target;
+        _worldConfig = ConfigLoader.LoadWorldConfig();
+        _speed = ConfigLoader.LoadEnemyConfig().ufo.speed;
         IsActive = true;
     }
 

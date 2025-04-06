@@ -3,26 +3,35 @@ using UnityEngine;
 public class EnemyFactory
 {
     private readonly ShipModel _playerShip;
-    private float _spawnDistance = 600f;
-    private float _speed = 5f;
-    private float _asteroidSize = 3f;
+    private readonly EnemyConfig _enemyConfig;
+    private readonly WorldConfig _worldConfig;
+    private float _spawnAngle = 45f;
 
     public EnemyFactory(ShipModel playerShip)
     {
         _playerShip = playerShip;
+        _enemyConfig = ConfigLoader.LoadEnemyConfig();
+        _worldConfig = ConfigLoader.LoadWorldConfig();
     }
 
     public IEnemy Create(EnemyType type)
     {
-        Vector3 spawnPosition = Random.onUnitSphere * _spawnDistance;
-
         switch (type)
         {
             case EnemyType.Asteroid:
-                Vector3 direction = Random.insideUnitSphere.normalized;
-                return new AsteroidModel(spawnPosition, direction, _speed, _asteroidSize);
+                Vector3 spawnPosition = Random.onUnitSphere * _worldConfig.worldSize;
+                Vector3 baseDirection = (_playerShip.Position - spawnPosition).normalized;
+                Vector3 randomOffset = Random.insideUnitSphere;
+                
+                Vector3 direction = Vector3.Slerp(baseDirection, randomOffset,
+                    Random.Range(0f, Mathf.Tan(_spawnAngle * Mathf.Deg2Rad)));
+                direction = direction.normalized;
+                return new AsteroidModel(spawnPosition, direction, _enemyConfig.asteroid.speed, _enemyConfig.asteroid.size);
+            
             case EnemyType.Ufo:
-                return new UfoModel(spawnPosition, _playerShip);
+                var ufoSpawnPosition = Random.onUnitSphere * _worldConfig.worldSize;
+                return new UfoModel(ufoSpawnPosition, _playerShip);
+            
             default:
                 throw new System.ArgumentException($"Unknown enemy type: {type}");
         }

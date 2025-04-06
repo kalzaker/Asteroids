@@ -13,7 +13,7 @@ public class GameInstaller : MonoInstaller
         Container.Bind<InputController>().AsSingle();
         Container.Bind<ShipViewModel>().AsSingle();
         
-        ShipView shipView = Container.InstantiatePrefabForComponent<ShipView>(shipPrefab, Vector3.zero, Quaternion.identity, null);
+        var shipView = Container.InstantiatePrefabForComponent<ShipView>(shipPrefab, Vector3.zero, Quaternion.identity, null);
         Container.Bind<ShipView>().FromInstance(shipView).AsSingle();
         
         Container.Bind<EnemyFactory>().AsSingle().WithArguments(Container.Resolve<ShipModel>());

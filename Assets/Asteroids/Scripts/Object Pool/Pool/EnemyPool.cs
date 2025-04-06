@@ -4,15 +4,17 @@ public class EnemyPool
 {
     private readonly EnemyFactory _factory;
     private readonly List<IEnemy> _enemies;
-    private readonly int _initialCapacity;
+    private int _initialCapacity;
+    private readonly int _maxEnemies;
 
-    public EnemyPool(EnemyFactory factory, int capacity)
+    public EnemyPool(EnemyFactory factory, int capacity = 10)
     {
         _factory = factory;
+        _maxEnemies = ConfigLoader.LoadWorldConfig().maxEnemies;
         _initialCapacity = capacity;
         _enemies = new List<IEnemy>(capacity);
 
-        for (int i = 0; i < capacity; i++)
+        for (var i = 0; i < capacity; i++)
         {
             var enemy = _factory.Create(EnemyType.Asteroid);
             enemy.Deactivate();
@@ -22,12 +24,18 @@ public class EnemyPool
 
     public IEnemy Get(EnemyType type)
     {
+        int activeCount = _enemies.FindAll(e => e.IsActive).Count;
+        if (activeCount >= _maxEnemies)
+        {
+            return null;
+        }
+            
         foreach (var enemy in _enemies)
         {
             if (!enemy.IsActive)
             {
                 var newEnemy = _factory.Create(type);
-                int index = _enemies.IndexOf(enemy);
+                var index = _enemies.IndexOf(enemy);
                 _enemies[index] = newEnemy;
                 return newEnemy;
             }

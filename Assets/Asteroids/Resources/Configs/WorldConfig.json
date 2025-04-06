@@ -1,0 +1,5 @@
+{
+  "worldSize": 600.0,
+  "killColliderRadius": 700.0,
+  "maxEnemies": 20
+}

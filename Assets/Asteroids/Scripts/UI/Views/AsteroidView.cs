@@ -24,6 +24,11 @@ public class AsteroidView : MonoBehaviour
         }
     }
 
+    public AsteroidModel GetAsteroidModel()
+    {
+        return _asteroidModel;
+    }
+
     public class Factory : PlaceholderFactory<AsteroidView>
     {
         public AsteroidView Create(AsteroidModel model)

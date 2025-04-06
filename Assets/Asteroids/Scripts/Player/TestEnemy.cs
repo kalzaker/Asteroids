@@ -16,7 +16,7 @@ public class TestEnemy : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             other.gameObject.GetComponent<TestPlayer>().TakeDamage();
-            Vector3 knockbackDirection = (other.transform.position - transform.position).normalized;
+            var knockbackDirection = (other.transform.position - transform.position).normalized;
             other.gameObject.GetComponent<TestPlayer>().Knockback(knockbackDirection);
             
             Knockback(-knockbackDirection);
@@ -25,7 +25,7 @@ public class TestEnemy : MonoBehaviour
 
     private void Update()
     {
-        Vector3 direction = (_player.transform.position - transform.position).normalized;
+        var direction = (_player.transform.position - transform.position).normalized;
         transform.Translate(direction * speed * Time.deltaTime);
     }
 
@@ -38,7 +38,7 @@ public class TestEnemy : MonoBehaviour
 
     private void Knockback(Vector3 direction)
     {
-        Vector3 newPosition = transform.position + direction * 5f;
+        var newPosition = transform.position + direction * 5f;
         transform.Translate(newPosition, Space.World);
     }
 }

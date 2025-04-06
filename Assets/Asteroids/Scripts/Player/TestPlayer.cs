@@ -35,7 +35,7 @@ public class TestPlayer : MonoBehaviour
 
     public void Knockback(Vector3 direction)
     {
-        Vector3 newPosition = transform.position + direction * knockbackForce;
+        var newPosition = transform.position + direction * knockbackForce;
         transform.Translate(newPosition, Space.World);
     }
 

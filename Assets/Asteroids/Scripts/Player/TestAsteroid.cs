@@ -32,7 +32,7 @@ public class TestAsteroid : MonoBehaviour
     {
         if (!isBigAsteroid) return;
         
-        for (int i = 0; i < splitAmount; i++)
+        for (var i = 0; i < splitAmount; i++)
         {
             Instantiate(smallAsteroidPrefab, transform.position, Quaternion.identity);
         }

@@ -1,0 +1,9 @@
+{
+  "maxHealth": 3,
+  "acceleration": 5.0,
+  "maxSpeed": 10.0,
+  "rotationSpeed": 90.0,
+  "drag": 2.0,
+  "bulletSpeed": 20.0,
+  "fireRate": 4.0
+}

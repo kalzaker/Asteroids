@@ -1,0 +1,9 @@
+{
+  "asteroid": {
+    "speed": 5.0,
+    "size": 3.0
+  },
+  "ufo": {
+    "speed": 4.0
+  }
+}

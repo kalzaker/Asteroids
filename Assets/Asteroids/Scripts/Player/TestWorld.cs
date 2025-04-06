@@ -25,7 +25,7 @@ public class TestWorld : MonoBehaviour
 
     private void WrapPosition(Transform playerTransform)
     {
-        Vector3 pos = playerTransform.position;
+        var pos = playerTransform.position;
         if (pos.x > worldSize.x / 2) pos.x = (worldSize.x / 2) * -1;
         else if (pos.x < -worldSize.x / 2) pos.x = worldSize.x / 2;
         
@@ -42,7 +42,7 @@ public class TestWorld : MonoBehaviour
     {
         while (true)
         {
-            Vector3 spawnPosition = GetRandomSpawnPosition();
+            var spawnPosition = GetRandomSpawnPosition();
             Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
             await UniTask.Delay((int)(spawnRate * 1000));
         }
@@ -50,9 +50,9 @@ public class TestWorld : MonoBehaviour
 
     private Vector3 GetRandomSpawnPosition()
     {
-        float x = Random.Range(-worldSize.x * 1.1f, worldSize.x * 1.1f);
-        float y = Random.Range(-worldSize.y * 1.1f, worldSize.y * 1.1f);
-        float z = Random.Range(-worldSize.z * 1.1f, worldSize.z * 1.1f);
+        var x = Random.Range(-worldSize.x * 1.1f, worldSize.x * 1.1f);
+        var y = Random.Range(-worldSize.y * 1.1f, worldSize.y * 1.1f);
+        var z = Random.Range(-worldSize.z * 1.1f, worldSize.z * 1.1f);
 
         if (Mathf.Abs(x) < worldSize.x && Mathf.Abs(y) < worldSize.y && Mathf.Abs(z) < worldSize.z)
         {

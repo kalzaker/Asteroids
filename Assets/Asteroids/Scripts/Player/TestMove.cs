@@ -40,10 +40,10 @@ public class TestMove : MonoBehaviour
 
     public void HandleRotation()
     {
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        var mouseX = Input.GetAxis("Mouse X");
+        var mouseY = Input.GetAxis("Mouse Y");
         
-        Vector3 rotation = new Vector3(-mouseY, mouseX, 0f) * rotationSpeed * Time.deltaTime;
+        var rotation = new Vector3(-mouseY, mouseX, 0f) * rotationSpeed * Time.deltaTime;
         transform.Rotate(rotation, Space.Self);
     }
 }
