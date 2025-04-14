@@ -1,9 +1,19 @@
 {
   "asteroid": {
-    "speed": 5.0,
-    "size": 3.0
+    "minSpeed": 2.0,
+    "maxSpeed": 5.0,
+    "size": 3.0,
+    "health": 2,
+    "fragmentMinSpeed": 5.0,
+    "fragmentMaxSpeed": 8.0,
+    "fragmentSize": 1.5,
+    "minFragments": 2,
+    "maxFragments": 5,
+    "spawnInterval": 2.0
   },
   "ufo": {
-    "speed": 4.0
+    "speed": 4.0,
+    "health": 3,
+    "spawnInterval": 5.0
   }
 }

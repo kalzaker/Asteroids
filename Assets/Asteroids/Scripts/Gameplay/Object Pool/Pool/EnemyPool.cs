@@ -1,17 +1,20 @@
 using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
+using System;
 
 public class EnemyPool
 {
     private readonly EnemyFactory _factory;
     private readonly List<IEnemy> _enemies;
-    private int _initialCapacity;
     private readonly int _maxEnemies;
+
+    public event Action<IEnemy> OnEnemyDeactivated;
 
     public EnemyPool(EnemyFactory factory, int capacity = 10)
     {
         _factory = factory;
         _maxEnemies = ConfigLoader.LoadWorldConfig().maxEnemies;
-        _initialCapacity = capacity;
         _enemies = new List<IEnemy>(capacity);
 
         for (var i = 0; i < capacity; i++)
@@ -22,7 +25,7 @@ public class EnemyPool
         }
     }
 
-    public IEnemy Get(EnemyType type)
+    public IEnemy Get(EnemyType type, Vector3? spawnPosition = null, bool isFragment = false)
     {
         int activeCount = _enemies.FindAll(e => e.IsActive).Count;
         if (activeCount >= _maxEnemies)
@@ -34,16 +37,27 @@ public class EnemyPool
         {
             if (!enemy.IsActive)
             {
-                var newEnemy = _factory.Create(type);
+                var newEnemy = _factory.Create(type, spawnPosition, isFragment);
                 var index = _enemies.IndexOf(enemy);
                 _enemies[index] = newEnemy;
                 return newEnemy;
             }
         }
         
-        var extraEnemy  = _factory.Create(type);
+        var extraEnemy  = _factory.Create(type, spawnPosition, isFragment);
         _enemies.Add(extraEnemy);
         return extraEnemy;
+    }
+
+    public void SpawnFragments(Vector3 position)
+    {
+        int fragmentCount = Random.Range(ConfigLoader.LoadEnemyConfig().asteroid.minFragments,
+            ConfigLoader.LoadEnemyConfig().asteroid.maxFragments + 1);
+
+        for (int i = 0; i < fragmentCount; i++)
+        {
+            Get(EnemyType.Asteroid, position, true);
+        }
     }
 
     public void UpdateEnemy()
@@ -53,6 +67,10 @@ public class EnemyPool
             if (enemy.IsActive)
             {
                 enemy.PositionUpdate();
+            }
+            else
+            {
+                OnEnemyDeactivated?.Invoke(enemy);
             }
         }
     }

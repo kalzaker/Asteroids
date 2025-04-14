@@ -16,4 +16,14 @@ public class InputController
         float roll = Input.GetAxisRaw("Horizontal");
         return new Vector3(-pitch, yaw, -roll);
     }
+
+    public bool IsShooting()
+    {
+        return Input.GetMouseButton(0);
+    }
+
+    public bool IsShootingLaser()
+    {
+        return Input.GetMouseButtonDown(1);
+    }
 }

@@ -15,6 +15,13 @@ public class BulletModel
         IsActive = true;
     }
 
+    public void Reset(Vector3 position, Quaternion rotation)
+    {
+        Position = position;
+        Velocity = rotation * Vector3.forward * _speed;
+        IsActive = true;
+    }
+
     public void PositionUpdate()
     {
         if (!IsActive) return;

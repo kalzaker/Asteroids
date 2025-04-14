@@ -10,4 +10,7 @@ public class PlayerConfig
     public float drag;
     public float bulletSpeed;
     public float fireRate;
+    public int laserCharges;
+    public float laserRechargeTime;
+    public float invulnerabilityDuration;
 }

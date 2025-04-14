@@ -23,6 +23,11 @@ public class UfoView : MonoBehaviour
         }
     }
 
+    public UfoModel GetUfoModel()
+    {
+        return _ufoModel;
+    }
+
     public class Factory : PlaceholderFactory<UfoView>
     {
         public UfoView Create(UfoModel model)
