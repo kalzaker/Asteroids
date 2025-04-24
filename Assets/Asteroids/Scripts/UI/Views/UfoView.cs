@@ -3,34 +3,29 @@ using Zenject;
 
 public class UfoView : MonoBehaviour
 {
-    private UfoModel _ufoModel;
+    private UfoModel _model;
 
     public void Initialize(UfoModel model)
     {
-        _ufoModel = model;
-        gameObject.SetActive(true);
+        _model = model;
+        gameObject.SetActive(_model.IsActive);
+        transform.position = _model.Position;
+        Debug.Log($"UfoView: Initialized at {_model.Position}");
     }
 
     private void Update()
     {
-        if (_ufoModel != null && _ufoModel.IsActive)
-        {
-            transform.position = _ufoModel.Position;
-        }
-        else
+        if (_model == null || !_model.IsActive)
         {
             gameObject.SetActive(false);
+            return;
         }
+        transform.position = _model.Position;
     }
 
-    public UfoModel GetUfoModel()
+    public class Factory : PlaceholderFactory<UfoModel, UfoView>
     {
-        return _ufoModel;
-    }
-
-    public class Factory : PlaceholderFactory<UfoView>
-    {
-        public UfoView Create(UfoModel model)
+        public override UfoView Create(UfoModel model)
         {
             var view = base.Create();
             view.Initialize(model);

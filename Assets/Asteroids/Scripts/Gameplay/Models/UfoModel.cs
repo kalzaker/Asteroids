@@ -1,32 +1,41 @@
 using UnityEngine;
 
-public class UfoModel : IEnemy
+public class UfoModel : IEnemy, IObjectPoolObject
 {
-    public Vector3 Position { get; private set; }
-    public Vector3 Velocity { get; private set; }
     public bool IsActive { get; private set; }
-    public int Health { get; private set; }
+    public Vector3 Position { get; private set; }
     public EnemyType Type => EnemyType.Ufo;
-
-    private readonly ShipModel _target;
+    public int Health { get; private set; }
+    private Vector3 _velocity;
     private readonly float _speed;
 
-    public UfoModel(Vector3 spawnPosition, ShipModel target)
+    public UfoModel()
     {
-        Position = spawnPosition;
-        _target = target;
-        _speed = ConfigLoader.LoadEnemyConfig().ufo.speed;
-        Health = ConfigLoader.LoadEnemyConfig().ufo.health;
-        IsActive = true;
+        var config = ConfigLoader.LoadEnemyConfig();
+        _speed = config.ufo.speed;
+        IsActive = false;
+        Health = 2;
+        Debug.Log($"UfoModel: Initialized with speed={_speed}, health={Health}");
     }
 
-    public void PositionUpdate()
+    public void Activate(Vector3 position, Vector3 direction, float size = 1f, bool isFragment = false)
+    {
+        Position = position;
+        _velocity = direction.normalized * _speed;
+        IsActive = true;
+        Debug.Log($"UfoModel: Activated at {position} with velocity {_velocity}");
+    }
+
+    public void Update(float deltaTime)
     {
         if (!IsActive) return;
-        
-        Vector3 direction = (_target.Position - Position).normalized;
-        Velocity = direction * _speed;
-        Position += Velocity * Time.deltaTime;
+        Position += _velocity * deltaTime;
+        Debug.Log($"UfoModel: Updated to {Position}");
+    }
+
+    public void Update()
+    {
+        Update(Time.deltaTime);
     }
 
     public void TakeDamage(int damage)
@@ -36,10 +45,21 @@ public class UfoModel : IEnemy
         {
             Deactivate();
         }
+        Debug.Log($"UfoModel: Took {damage} damage, health={Health}, isActive={IsActive}");
     }
 
     public void Deactivate()
     {
         IsActive = false;
+        Debug.Log($"UfoModel: Deactivated at {Position}");
+    }
+
+    public void OnReset()
+    {
+        IsActive = false;
+        Position = Vector3.zero;
+        _velocity = Vector3.zero;
+        Health = 2;
+        Debug.Log("UfoModel: Reset");
     }
 }

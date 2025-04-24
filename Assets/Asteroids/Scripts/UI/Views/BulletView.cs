@@ -1,67 +1,35 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Zenject;
 
 public class BulletView : MonoBehaviour
 {
-    private BulletModel _bulletModel;
+    private BulletModel _model;
 
-    private void Awake()
+    private void Start()
     {
-        var collider = gameObject.AddComponent<SphereCollider>();
-        collider.isTrigger = true;
-        collider.radius = 0.5f;
+        transform.localScale = new Vector3(2, 2, 2);
+        Debug.Log($"BulletView: Created at {transform.position}, scale={transform.localScale}");
     }
 
     public void Initialize(BulletModel model)
     {
-        _bulletModel = model;
-        gameObject.SetActive(true);
+        _model = model;
+        gameObject.SetActive(_model.IsActive);
+        transform.position = _model.Position;
+        Debug.Log($"BulletView: Initialized at {_model.Position}, isActive={_model.IsActive}");
     }
 
     private void Update()
     {
-        if (_bulletModel != null && _bulletModel.IsActive)
-        {
-            transform.position = _bulletModel.Position;
-        }
-        else
+        if (_model == null || !_model.IsActive)
         {
             gameObject.SetActive(false);
+            return;
         }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!_bulletModel.IsActive) return;
-
-        if (other.TryGetComponent<AsteroidView>(out var asteroidView))
-        {
-            var asteroid = asteroidView.GetAsteroidModel();
-            if (asteroid != null && asteroid.IsActive)
-            {
-                asteroid.TakeDamage(1);
-                _bulletModel.Deactivate();
-            }
-        }
-        else if (other.TryGetComponent<UfoView>(out var ufoView))
-        {
-            var ufo = ufoView.GetUfoModel();
-            if (ufo != null && ufo.IsActive)
-            {
-                ufo.TakeDamage(1);
-                _bulletModel.Deactivate();
-            }
-        }
+        transform.position = _model.Position;
     }
 
     public class Factory : PlaceholderFactory<BulletView>
     {
-        public BulletView Create(BulletModel model)
-        {
-            var view = base.Create();
-            view.Initialize(model);
-            return view;
-        }
     }
 }

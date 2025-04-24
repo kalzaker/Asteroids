@@ -8,5 +8,7 @@
   "fireRate": 4.0,
   "laserCharges": 3,
   "laserRechargeTime": 10.0,
+  "laserLifeTime": 0.5,
+  "laserLength": 1000.0,
   "invulnerabilityDuration": 3.0
 }

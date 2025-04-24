@@ -26,14 +26,13 @@ public class UIManager : MonoBehaviour
     };
 
     [Inject]
-    public void Construct(ShipModel shipModel, EnemyPool enemyPool)
+    public void Construct(ShipModel shipModel)
     {
         _shipModel = shipModel;
         _playerConfig = ConfigLoader.LoadPlayerConfig();
 
         _shipModel.OnHealthChanged += UpdateHealthUI;
         _shipModel.OnLaserChargesChanged += UpdateLaserChargesUI;
-        enemyPool.OnEnemyDeactivated += AddScoreForEnemy;
         
         UpdateHealthUI(_shipModel.Health);
         UpdateLaserChargesUI(_shipModel.LaserCharges);
@@ -62,7 +61,7 @@ public class UIManager : MonoBehaviour
             _laserRechargeSlider.value = 0f;
         }
 
-        _positionText.text = $"Pos: ({_shipModel.Position.x}, {_shipModel.Position.y}, {_shipModel.Position.z})";
+        _positionText.text = $"Pos: ({_shipModel.Position.x:F1}, {_shipModel.Position.y:F1}, {_shipModel.Position.z:F1})";
         _rotationText.text = $"Rot: {_shipModel.Rotation.eulerAngles.z:F1}\u00b0";
         _velocityText.text = $"Vel: {_shipModel.Velocity.magnitude:F1}";
     }
@@ -79,6 +78,7 @@ public class UIManager : MonoBehaviour
             if (_score > highScore)
             {
                 PlayerPrefs.SetInt("HighScore", _score);
+                PlayerPrefs.Save();
             }
         }
     }

@@ -1,184 +1,80 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    [Inject] private EnemyPool _enemyPool;
-    [Inject] private BulletPool _bulletPool;
-    [Inject] private LaserPool _laserPool;
-    
-    [Inject] private AsteroidView.Factory _asteroidViewFactory;
-    [Inject] private UfoView.Factory _ufoViewFactory;
-    [Inject] private BulletView.Factory _bulletViewFactory;
-    [Inject] private LaserView.Factory _laserViewFactory;
-    
-    [Inject] private ShipModel _shipModel;
-    [Inject] private GameOverUI _gameOverUI;
-    [Inject] private UIManager _uiManager;
+    private readonly EnemyFactory _enemyFactory;
+    private readonly BulletFactory _bulletFactory;
+    private float _spawnTimer;
+    private readonly float _spawnInterval = 2f;
+    private readonly List<IEnemy> _activeEnemies = new List<IEnemy>();
 
-    private Dictionary<IEnemy, MonoBehaviour> _enemyViews = new Dictionary<IEnemy, MonoBehaviour>();
-    private Dictionary<BulletModel, BulletView> _bulletViews = new Dictionary<BulletModel, BulletView>();
-    private Dictionary<LaserModel, LaserView> _laserViews = new Dictionary<LaserModel, LaserView>();
-    
-    private float _asteroidSpawnTimer = 0f;
-    private float _ufoSpawnTimer = 0f;
-    private float _asteroidSpawnInterval;
-    private float _ufoSpawnInterval;
-
-    private void Awake()
+    [Inject]
+    public GameManager(EnemyFactory enemyFactory, BulletFactory bulletFactory)
     {
-        _asteroidSpawnInterval = ConfigLoader.LoadEnemyConfig().asteroid.spawnInterval;
-        _ufoSpawnInterval = ConfigLoader.LoadEnemyConfig().ufo.spawnInterval;
-        _shipModel.OnDeath += HandleShipDestroyed;
-    }
-
-    private void OnDestroy()
-    {
-        _shipModel.OnDeath -= HandleShipDestroyed;
+        _enemyFactory = enemyFactory;
+        _bulletFactory = bulletFactory;
+        Debug.Log($"GameManager: Initialized, enemyFactory={(_enemyFactory != null)}, bulletFactory={(_bulletFactory != null)}");
     }
 
     private void Update()
     {
-        _enemyPool.UpdateEnemy();
-        _bulletPool.UpdateBullet();
-        _laserPool.UpdateLasers();
-        
-        _asteroidSpawnTimer += Time.deltaTime;
-        if (_asteroidSpawnTimer >= _asteroidSpawnInterval)
+        _spawnTimer -= Time.deltaTime;
+        if (_spawnTimer <= 0)
         {
-            _asteroidSpawnTimer = 0f;
-            _enemyPool.Get(EnemyType.Asteroid);
+            string key = Random.value < 0.8f ? "Asteroid" : "Ufo";
+            var enemy = _enemyFactory.Create(key, Random.onUnitSphere * ConfigLoader.LoadWorldConfig().worldSize);
+            _activeEnemies.Add(enemy);
+            _spawnTimer = _spawnInterval;
+            Debug.Log($"GameManager: Spawned {key}");
         }
-        
-        _ufoSpawnTimer += Time.deltaTime;
-        if (_ufoSpawnTimer >= _ufoSpawnInterval)
+
+        // Обновление врагов и спавн фрагментов
+        for (int i = _activeEnemies.Count - 1; i >= 0; i--)
         {
-            _ufoSpawnTimer = 0f;
-            _enemyPool.Get(EnemyType.Ufo);
-        }
-        
-        var activeEnemies = _enemyPool.GetActiveEnemies();
-        foreach (var enemy in activeEnemies)
-        {
-            if (!_enemyViews.ContainsKey(enemy))
+            var enemy = _activeEnemies[i];
+            enemy.Update(Time.deltaTime);
+            if (!enemy.IsActive && enemy.Type == EnemyType.Asteroid && !(enemy as AsteroidModel).IsFragment)
             {
-                switch (enemy.Type)
+                float fragmentSize = (enemy as AsteroidModel).Size * 0.5f;
+                for (int j = 0; j < 2; j++)
                 {
-                    case EnemyType.Asteroid:
-                        var asteroidView = _asteroidViewFactory.Create((AsteroidModel)enemy);
-                        _enemyViews[enemy] = asteroidView;
-                        break;
-                    case EnemyType.Ufo:
-                        var ufoView = _ufoViewFactory.Create((UfoModel)enemy);
-                        _enemyViews[enemy] = ufoView;
-                        break;
+                    Vector3 fragmentPos = enemy.Position + Random.insideUnitSphere * fragmentSize;
+                    var fragment = _enemyFactory.Create("Asteroid", fragmentPos, fragmentSize, true);
+                    _activeEnemies.Add(fragment);
+                    Debug.Log($"GameManager: Spawned fragment at {fragmentPos}, size={fragmentSize}");
+                }
+                _activeEnemies.RemoveAt(i);
+                _enemyFactory.ReturnToPool(enemy, "Asteroid");
+            }
+            else if (!enemy.IsActive)
+            {
+                _activeEnemies.RemoveAt(i);
+                _enemyFactory.ReturnToPool(enemy, enemy.Type == EnemyType.Asteroid ? "Asteroid" : "Ufo");
+            }
+        }
+
+        _enemyFactory.UpdateViews();
+        _bulletFactory.UpdateViews();
+
+        // Тестовый урон (нажми Q)
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            foreach (var enemy in _activeEnemies)
+            {
+                if (enemy.Type == EnemyType.Asteroid)
+                {
+                    enemy.TakeDamage(1);
+                    Debug.Log($"GameManager: Dealt 1 damage to {enemy.Type} at {enemy.Position}");
                 }
             }
         }
-        
-        var activeBullets = _bulletPool.GetActiveBullets();
-        foreach (var bullet in activeBullets)
-        {
-            if (!_bulletViews.ContainsKey(bullet))
-            {
-                var bulletView = _bulletViewFactory.Create(bullet);
-                _bulletViews[bullet] = bulletView;
-            }
-        }
-        
-        var activeLasers = _laserPool.GetActiveLasers();
-        foreach (var laser in activeLasers)
-        {
-            if (!_laserViews.ContainsKey(laser))
-            {
-                var laserView = _laserViewFactory.Create(laser);
-                _laserViews[laser] = laserView;
-
-                RaycastHit hit;
-                if (Physics.Raycast(laser.StartPosition, laser.Direction, out hit, 1000f))
-                {
-                    if (hit.collider.TryGetComponent<AsteroidView>(out var asteroidView))
-                    {
-                        asteroidView.GetAsteroidModel()?.Deactivate();
-                    }
-                    else if (hit.collider.TryGetComponent<UfoView>(out var ufoView))
-                    {
-                        ufoView.GetUfoModel()?.Deactivate();
-                    }
-                }
-            }
-        }
-        
-        CleanupInactiveEnemies(activeEnemies);
-        CleanupInactiveBullets(activeBullets);
     }
 
-    private void HandleShipDestroyed()
+    public void Shoot(Vector3 position, Vector3 direction)
     {
-        PlayerPrefs.Save();
-        _gameOverUI.Show(_uiManager.GetScore());
-    }
-
-    private void CleanupInactiveEnemies(List<IEnemy> activeEnemies)
-    {
-        var toRemove = new List<IEnemy>();
-        foreach (var kvp in _enemyViews)
-        {
-            if (!activeEnemies.Contains(kvp.Key))
-            {
-                kvp.Value.gameObject.SetActive(false);
-                toRemove.Add(kvp.Key);
-            }
-        }
-
-        foreach (var key in toRemove)
-        {
-            _enemyViews.Remove(key);
-        }
-    }
-
-    private void CleanupInactiveBullets(List<BulletModel> activeBullets)
-    {
-        var toRemove = new List<BulletModel>();
-        foreach (var kvp in _bulletViews)
-        {
-            if (!activeBullets.Contains(kvp.Key))
-            {
-                kvp.Value.gameObject.SetActive(false);
-                toRemove.Add(kvp.Key);
-            }
-        }
-
-        foreach (var key in toRemove)
-        {
-            _bulletViews.Remove(key);
-        }
-    }
-
-    private void CleanupInactiveLasers(List<LaserModel> activeLasers)
-    {
-        var toRemove = new List<LaserModel>();
-        foreach (var kvp in _laserViews)
-        {
-            if (!activeLasers.Contains(kvp.Key))
-            {
-                kvp.Value.gameObject.SetActive(false);
-                toRemove.Add(kvp.Key);
-            }
-
-            foreach (var key in toRemove)
-            {
-                _laserViews.Remove(key);
-            }
-        }
-    }
-    
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        float worldSize = ConfigLoader.LoadWorldConfig().worldSize;
-        Gizmos.DrawWireCube(Vector3.zero, new Vector3(worldSize, worldSize, worldSize));
+        _bulletFactory.Create("Bullet", position, direction);
+        Debug.Log($"GameManager: Fired bullet at {position}");
     }
 }

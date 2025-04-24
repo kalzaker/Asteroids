@@ -3,41 +3,35 @@ using Zenject;
 
 public class ShipView : MonoBehaviour
 {
-    [Inject] private ShipViewModel _shipViewModel;
+    private ShipModel _shipModel;
+    private GameManager _gameManager;
 
-    private void Start()
+    [Inject]
+    public void Construct(ShipModel shipModel, GameManager gameManager)
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        var collider = gameObject.AddComponent<SphereCollider>();
-        collider.isTrigger = true;
-        collider.radius = 0.5f;
+        _shipModel = shipModel;
+        _gameManager = gameManager;
+        Debug.Log("ShipView: Initialized");
     }
 
     private void Update()
     {
-        _shipViewModel.Update();
+        float moveSpeed = 5f;
+        Vector3 input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+        Vector3 newPosition = transform.position + input.normalized * moveSpeed * Time.deltaTime;
+        _shipModel.UpdatePosition(newPosition);
+        transform.position = newPosition;
 
-        transform.position = _shipViewModel.Position;
-        transform.rotation = _shipViewModel.Rotation;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.TryGetComponent<AsteroidView>(out var asteroidView))
+        if (input.magnitude > 0)
         {
-            var asteroid = asteroidView.GetAsteroidModel();
-            if (asteroid != null && asteroid.IsActive)
-            {
-                _shipViewModel.HandleCollision(asteroid);
-            }
+            _shipModel.UpdateDirection(input.normalized);
+            transform.rotation = Quaternion.LookRotation(input.normalized);
         }
-        else if (other.TryGetComponent<UfoView>(out var ufoView))
+
+        if (Input.GetKey(KeyCode.Space) && _shipModel.CanShoot())
         {
-            var ufo = ufoView.GetUfoModel();
-            if (ufo != null && ufo.IsActive)
-            {
-                _shipViewModel.HandleCollision(ufo);
-            }
+            _gameManager.Shoot(transform.position + transform.forward, transform.forward);
+            Debug.Log($"ShipView: Fired bullet at {transform.position}");
         }
     }
 }
